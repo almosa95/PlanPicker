@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanPicker", "PlanPicker.csproj", "{F971FAC9-98C2-4CE4-8ECC-5DF08D7BFB63}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanPicker", "PlanPicker\PlanPicker.csproj", "{F971FAC9-98C2-4CE4-8ECC-5DF08D7BFB63}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
