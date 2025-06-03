@@ -10,21 +10,21 @@
         <div class="checkbox-container">
             @foreach (var tipo in ValoresEnum)
             {
-                <label class="checkbox-label">
-                    <input type="checkbox" class="checkbox-label"
+                <label class="checkbox-label @(TipoPlanSeleccionados.ContainsKey(tipo) ? "active" : "")" @onclick="(e) => ActualizarFiltro(tipo, tipo.ToString())">
+                    @* <input type="checkbox" class="checkbox-label"
                     checked="@(TipoPlanSeleccionados.ContainsKey(tipo) ? TipoPlanSeleccionados[tipo] : false)"
-                    @onchange="(e) => ActualizarFiltro(tipo, ((ChangeEventArgs)e).Value)" />
-                    <span></span> @tipo.ToString()
+                    @onchange="(e) => ActualizarFiltro(tipo, ((ChangeEventArgs)e).Value)" /> *@
+                        @tipo.ToString()
                 </label>
             }
         </div>
 
-        <select value="@TipoPlanSeleccionados" multiple>
+        @* <select value="@TipoPlanSeleccionados" multiple>
             @foreach (var ubicacion in Ubicaciones)
             {
                 <option value="@ubicacion">@ubicacion</option>
             }
-        </select>
+        </select> *@
     }
 
     <button class="btn-descubrir" @onclick="IniciarAnimacion">DESCUBRIR UN PLAN</button>
@@ -52,7 +52,7 @@
 
 
 @code {
-    private Dictionary<TipoPlanEnum, bool> TipoPlanSeleccionados = new();
+    private Dictionary<TipoPlanEnum, string> TipoPlanSeleccionados = new();
     public List<Plan> Planes = new();
     public List<Plan> PlanesFiltrados = new();
 
@@ -60,7 +60,7 @@
 
     TipoPlanEnum[] ValoresEnum;
     TipoPlanEnum[] Ubicaciones = new[] { TipoPlanEnum.Cercano, TipoPlanEnum.Lejano, TipoPlanEnum.Interior, TipoPlanEnum.Exterior };
-    
+
     private bool MostrandoCartas = false;
     private int CartaSeleccionada = -1;
 
@@ -376,9 +376,15 @@
 
     private void ActualizarFiltro(TipoPlanEnum tipo, object valor)
     {
-        TipoPlanSeleccionados[tipo] = (bool)valor;
+        if (TipoPlanSeleccionados.ContainsKey(tipo))
+        {
+            TipoPlanSeleccionados.Remove(tipo);
+            return;
+        }
 
-        var filtrosActivos = TipoPlanSeleccionados.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
+        TipoPlanSeleccionados[tipo] = (string)valor;
+
+        var filtrosActivos = TipoPlanSeleccionados.Where(kvp => kvp.Value == tipo.ToString()).Select(kvp => kvp.Key).ToList();
 
         if (filtrosActivos.Any())
         {

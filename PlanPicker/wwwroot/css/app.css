@@ -1,5 +1,6 @@
 ﻿html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: "Inter", sans-serif;
+    background-color: #ffe7cb !important;
 }
 
 a, .btn-link {
@@ -90,9 +91,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: "Inter", sans-serif;
+    background-color: #ffe7cb;
     height: 100vh;
-    background-color: #fdfdfd;
-    font-family: 'Poppins', sans-serif;
     text-align: center;
     margin: 0;
 }
@@ -212,28 +213,34 @@ h1 {
 .checkbox-container {
     display: flex;
     gap: 10px;
-    max-width: 400px;
+    max-width: 350px;
     margin: auto;
     flex-wrap: wrap;
 }
 
 .checkbox-label {
+    max-width: 110px;
     display: flex;
     align-items: center;
-    gap: 5px;
-    font-size: 16px;
+    font-size: 15px;
+    font-weight: 600;
+    place-content: center;
     cursor: pointer;
     background-color: #f8f8f8;
     flex: 1;
-    width: 140px;
     padding: 8px 12px;
     border-radius: 8px;
     border: 2px solid transparent;
     transition: all 0.3s ease;
 }
 
+    .checkbox-label.active {
+        background-color: #ff4081;
+        color: white;
+    }
+
     .checkbox-label:hover {
-        background-color: #ffe6f0;
+        border: 2px solid #ff4081;
     }
 
     .checkbox-label input {
