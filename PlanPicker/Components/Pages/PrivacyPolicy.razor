@@ -1,0 +1,65 @@
+﻿@page "/privacy-policy"
+
+<div class="container" style="height: 100vh; align-content: center;">
+    <h3>Política de Privacidad – Plan Picker</h3>
+
+    <p><strong>Fecha de entrada en vigor:</strong> 3 de junio de 2025</p>
+
+    <p>
+    Plan Picker ("nosotros", "nuestro" o "la aplicación") respeta la privacidad de sus usuarios. Esta política de privacidad explica cómo recopilamos, usamos y compartimos información a través de nuestra aplicación móvil.
+    </p>
+
+    <p>
+    <strong>Información que recopilamos:</strong><br>
+    La aplicación puede recopilar información automáticamente, incluyendo, entre otros:<br>
+    - Tipo de dispositivo y sistema operativo<br>
+    - Dirección IP<br>
+    - Datos de uso de la app<br>
+    - Identificadores móviles (como el ID de publicidad de Google - AAID)
+    </p>
+
+    <p>
+    <strong>Anuncios:</strong><br>
+    Utilizamos Google AdMob como proveedor de publicidad. AdMob puede recopilar y usar datos para mostrar anuncios personalizados o no personalizados, según la región del usuario.<br>
+    Más información: <a href="https://policies.google.com/technologies/ads" target="_blank">https://policies.google.com/technologies/ads</a>
+    </p>
+
+    <p>
+    <strong>Consentimiento de usuarios:</strong><br>
+    En determinadas regiones (como la Unión Europea o California), podríamos mostrar una solicitud de consentimiento para cumplir con regulaciones locales (como el RGPD o la CCPA).<br>
+    Los usuarios pueden elegir entre anuncios personalizados o no personalizados.
+    </p>
+
+    <p>
+    <strong>Seguridad:</strong><br>
+    Nos comprometemos a proteger la información del usuario. Implementamos medidas técnicas y organizativas adecuadas, aunque ningún método de transmisión o almacenamiento es completamente seguro.
+    </p>
+
+    <p>
+    <strong>Cambios a esta política:</strong><br>
+    Nos reservamos el derecho de modificar esta política de privacidad en cualquier momento. Cualquier cambio será publicado dentro de la aplicación o en un sitio web accesible.
+    </p>
+
+    <p>
+    <strong>Contacto:</strong><br>
+    Si tienes preguntas o inquietudes sobre esta política de privacidad, puedes contactarnos en:<br>
+    alberto.morcillo.developer@gmail.com
+    </p>
+
+    <button style="border: none;
+    background: inherit;
+    float: right;" @onclick="Regresar">
+    Regresar
+    </button>
+</div>
+
+
+
+@code {
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+    void Regresar()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

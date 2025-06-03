@@ -2,8 +2,8 @@
 @using PlanazosPicker.Modelos
 @using static PlanazosPicker.Modelos.FuncionesGlobalesEnums
 
-<div class="container">
-    <h3>Selecciona el tipo de plan:</h3>
+<div class="container" style="height: 100vh; align-content: center;">
+    <h3 style="font-size: 27px;">Selecciona el tipo de plan:</h3>
 
     @if(ValoresEnum != null)
     {
@@ -48,10 +48,20 @@
             <p>@PlanSeleccionado.DESCRIPCION</p>
         </div>
     }
+
+    <button style="border: none;
+    background: inherit;
+    position: absolute;
+    right: 10px;
+    bottom: 20px;" @onclick="IrAPolitica">
+        Ver política de privacidad
+    </button>
 </div>
 
 
 @code {
+    [Inject] NavigationManager NavigationManager { get; set; }
+
     private Dictionary<TipoPlanEnum, string> TipoPlanSeleccionados = new();
     public List<Plan> Planes = new();
     public List<Plan> PlanesFiltrados = new();
@@ -394,6 +404,10 @@
         {
             PlanesFiltrados = new(Planes);
         }
+    }
 
+    void IrAPolitica()
+    {
+        NavigationManager.NavigateTo("/privacy-policy");
     }
 }
