@@ -16,7 +16,7 @@ public class TranslationService
             using var reader = new StreamReader(stream);
             var json = await reader.ReadToEndAsync();
 
-            var translations = System.Text.Json.JsonSerializer.Deserialize< Dictionary<string, Dictionary<string, string>>> (json);
+            var translations = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>> (json);
             return translations ?? new();
         }
         catch (Exception ex)

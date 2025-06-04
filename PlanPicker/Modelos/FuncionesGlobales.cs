@@ -6,7 +6,7 @@ namespace PlanPicker.Modelos
     {
         public static List<Plan> GetPlans(string language)
         {
-            if(language == "esp")
+            if(language == "es")
             {
                 return new List<Plan>
                 {

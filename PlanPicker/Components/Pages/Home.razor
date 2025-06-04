@@ -13,11 +13,6 @@
             {
                 <label class="checkbox-label @(_tipoPlanSeleccionados.ContainsKey(tipo.Key) ? "active" : "")" @onclick="(e) => ActualizarFiltro(tipo.Key.ToString(), tipo.Key.ToString())">
                     @tipo.Value[Idioma]
-                   @*  @if (_traducciones.TryGetValue(tipo.ToString(), out var etiquetas) && etiquetas.TryGetValue(Idioma, out var texto))
-                    {
-                        <span>@texto</span>
-                     }*@
-                    
                 </label>
             }
         </div>
