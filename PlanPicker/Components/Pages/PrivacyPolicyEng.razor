@@ -1,0 +1,65 @@
+﻿@page "/privacy-policy-eng"
+
+<div class="container" style="height: 100vh; align-content: center;">
+    <h3>Privacy Policy – Plan Picker</h3>
+
+    <p><strong>Effective Date:</strong> June 3, 2025</p>
+
+    <p>
+        Plan Picker ("we", "our", or "the app") respects the privacy of its users. This privacy policy explains how we collect, use, and share information through our mobile application.
+    </p>
+
+    <p>
+        <strong>Information We Collect:</strong><br>
+        The app may automatically collect information, including but not limited to:<br>
+        - Device type and operating system<br>
+        - IP address<br>
+        - App usage data<br>
+        - Mobile identifiers (such as the Google Advertising ID - AAID)
+    </p>
+
+    <p>
+        <strong>Ads:</strong><br>
+        We use Google AdMob as our advertising provider. AdMob may collect and use data to show personalized or non-personalized ads, depending on the user's region.<br>
+        More information: <a href="https://policies.google.com/technologies/ads" target="_blank">https://policies.google.com/technologies/ads</a>
+    </p>
+
+    <p>
+        <strong>User Consent:</strong><br>
+        In certain regions (such as the European Union or California), we may display a consent request to comply with local regulations (such as GDPR or CCPA).<br>
+        Users can choose between personalized or non-personalized ads.
+    </p>
+
+    <p>
+        <strong>Security:</strong><br>
+        We are committed to protecting user information. We implement appropriate technical and organizational measures, although no method of transmission or storage is completely secure.
+    </p>
+
+    <p>
+        <strong>Changes to This Policy:</strong><br>
+        We reserve the right to modify this privacy policy at any time. Any changes will be published within the app or on an accessible website.
+    </p>
+
+    <p>
+        <strong>Contact:</strong><br>
+        If you have questions or concerns about this privacy policy, you can contact us at:<br>
+        alberto.morcillo.developer@gmail.com
+    </p>
+
+    <button style="border: none;
+    background: inherit;
+    float: right;" @onclick="Regresar">
+    Return
+    </button>
+</div>
+
+
+
+@code {
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+    void Regresar()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

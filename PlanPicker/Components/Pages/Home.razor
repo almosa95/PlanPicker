@@ -4,7 +4,7 @@
 @using static PlanPicker.Modelos.FuncionesGlobalesEnums
 
 <div class="container" style="height: 97vh; align-content: center;">
-    <h3 style="font-size: 27px;">Selecciona el tipo de plan:</h3>
+    <h3 style="font-size: 27px;">@(Idioma == "es" ? "Selecciona el tipo o los tipos de plan:" : "Select one or more plan types:")</h3>
 
     @if (_traducciones != null)
     {
@@ -18,7 +18,7 @@
         </div>
     }
 
-    <button class="btn-descubrir" @onclick="IniciarAnimacion">DESCUBRIR UN PLAN</button>
+    <button class="btn-descubrir" @onclick="IniciarAnimacion">@(Idioma == "es" ? "DESCUBRIR UN PLAN" : "DISCOVER A PLAN")</button>
 
     @if (MostrandoCartas)
     {
@@ -35,7 +35,7 @@
     @if (PlanSeleccionado != null)
     {
         <div class="resultado">
-            <h2>¡Tu Plan es! 🎉</h2>
+            <h2>@(Idioma == "es" ? "¡Tu Plan es...! " : "Your plan is...! ")🎉</h2>
             <p>@PlanSeleccionado.DESCRIPCION</p>
         </div>
     }
@@ -112,7 +112,9 @@
 
         if (filtrosActivos.Any())
         {
-            PlanesFiltrados = Planes.Where(p => filtrosActivos.Contains(p.TIPO_PLAN.ToString())).ToList();
+            PlanesFiltrados = Planes
+            .Where(plan => plan.TIPO_PLAN.Any(tipo => filtrosActivos.Contains(tipo.ToString())))
+            .ToList();
         }
         else
         {
@@ -122,6 +124,13 @@
 
     void IrAPolitica()
     {
-        NavigationManager.NavigateTo("/privacy-policy");
+        if (Idioma == "es")
+        {
+            NavigationManager.NavigateTo("/privacy-policy");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/privacy-policy-eng");
+        }
     }
 }
