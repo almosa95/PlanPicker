@@ -1,4 +1,4 @@
-﻿namespace PlanazosPicker
+﻿namespace PlanPicker
 {
     public partial class MainPage : ContentPage
     {

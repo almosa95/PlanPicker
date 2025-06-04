@@ -1,0 +1,74 @@
+{
+  "Pareja": {
+    "es": "Pareja",
+    "en": "Couple"
+  },
+  "Solitario": {
+    "es": "Solitario",
+    "en": "Solo"
+  },
+  "Familiar": {
+    "es": "Familiar",
+    "en": "Family"
+  },
+  "Aventura": {
+    "es": "Aventura",
+    "en": "Adventure"
+  },
+  "Cultura": {
+    "es": "Cultura",
+    "en": "Culture"
+  },
+  "Relajacion": {
+    "es": "Relajacion",
+    "en": "Relaxation"
+  },
+  "Comida": {
+    "es": "Comida",
+    "en": "Food"
+  },
+  "Exterior": {
+    "es": "Exterior",
+    "en": "Outdoor"
+  },
+  "Interior": {
+    "es": "Interior",
+    "en": "Indoor"
+  },
+  "Cercano": {
+    "es": "Cercano",
+    "en": "Nearby"
+  },
+  "Lejano": {
+    "es": "Lejano",
+    "en": "Faraway"
+  },
+  "Rapido": {
+    "es": "Rapido",
+    "en": "Fast"
+  },
+  "Deportes": {
+    "es": "Deportes",
+    "en": "Sports"
+  },
+  "Fiesta": {
+    "es": "Fiesta",
+    "en": "Party"
+  },
+  "Social": {
+    "es": "Social",
+    "en": "Social"
+  },
+  "Aprendizaje": {
+    "es": "Aprendizaje",
+    "en": "Learning"
+  },
+  "Misterio": {
+    "es": "Misterio",
+    "en": "Mystery"
+  },
+  "Tecnologia": {
+    "es": "Tecnologia",
+    "en": "Technology"
+  }
+}

@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace PlanazosPicker
+namespace PlanPicker
 {
     [Application]
     public class MainApplication : MauiApplication

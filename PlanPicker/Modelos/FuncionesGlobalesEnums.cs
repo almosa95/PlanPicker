@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PlanazosPicker.Modelos
+﻿namespace PlanPicker.Modelos
 {
-    public  class FuncionesGlobalesEnums
+    public class FuncionesGlobalesEnums
     {
-        public enum TipoPlanEnum
+        public enum PlanTypeEnum
         {
             Pareja,
             Solitario,
@@ -22,11 +16,11 @@ namespace PlanazosPicker.Modelos
             Cercano,
             Lejano,
             Rapido,
-            Deportes,      
-            Fiesta,        
-            Social,        
-            Aprendizaje,   
-            Misterio,      
+            Deportes,
+            Fiesta,
+            Social,
+            Aprendizaje,
+            Misterio,
             Tecnologia
         }
     }

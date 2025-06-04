@@ -1,30 +1,26 @@
-﻿@page "/"
-@using PlanazosPicker.Modelos
-@using static PlanazosPicker.Modelos.FuncionesGlobalesEnums
+﻿@page "/home/{Idioma}"
 
-<div class="container" style="height: 100vh; align-content: center;">
+@using PlanPicker.Modelos
+@using static PlanPicker.Modelos.FuncionesGlobalesEnums
+
+<div class="container" style="height: 97vh; align-content: center;">
     <h3 style="font-size: 27px;">Selecciona el tipo de plan:</h3>
 
-    @if(ValoresEnum != null)
+    @if (_traducciones != null)
     {
         <div class="checkbox-container">
-            @foreach (var tipo in ValoresEnum)
+            @foreach (var tipo in _traducciones)
             {
-                <label class="checkbox-label @(TipoPlanSeleccionados.ContainsKey(tipo) ? "active" : "")" @onclick="(e) => ActualizarFiltro(tipo, tipo.ToString())">
-                    @* <input type="checkbox" class="checkbox-label"
-                    checked="@(TipoPlanSeleccionados.ContainsKey(tipo) ? TipoPlanSeleccionados[tipo] : false)"
-                    @onchange="(e) => ActualizarFiltro(tipo, ((ChangeEventArgs)e).Value)" /> *@
-                        @tipo.ToString()
+                <label class="checkbox-label @(_tipoPlanSeleccionados.ContainsKey(tipo.Key) ? "active" : "")" @onclick="(e) => ActualizarFiltro(tipo.Key.ToString(), tipo.Key.ToString())">
+                    @tipo.Value[Idioma]
+                   @*  @if (_traducciones.TryGetValue(tipo.ToString(), out var etiquetas) && etiquetas.TryGetValue(Idioma, out var texto))
+                    {
+                        <span>@texto</span>
+                     }*@
+                    
                 </label>
             }
         </div>
-
-        @* <select value="@TipoPlanSeleccionados" multiple>
-            @foreach (var ubicacion in Ubicaciones)
-            {
-                <option value="@ubicacion">@ubicacion</option>
-            }
-        </select> *@
     }
 
     <button class="btn-descubrir" @onclick="IniciarAnimacion">DESCUBRIR UN PLAN</button>
@@ -49,321 +45,44 @@
         </div>
     }
 
-    <button style="border: none;
-    background: inherit;
-    position: absolute;
-    right: 10px;
-    bottom: 20px;" @onclick="IrAPolitica">
-        Ver política de privacidad
+    <button style="border: none; background: inherit;  position: absolute; right: 10px; bottom: 20px;" @onclick="IrAPolitica">
+        @(Idioma == "es" ? "Ver política de privacidad" : "Show privacy policy")
     </button>
 </div>
 
 
 @code {
-    [Inject] NavigationManager NavigationManager { get; set; }
+    [Inject] protected NavigationManager NavigationManager { get; set; }
+    [Inject] protected TranslationService TranslationsService { get; set; }
+    [Parameter] public string Idioma { get; set; } = "";
 
-    private Dictionary<TipoPlanEnum, string> TipoPlanSeleccionados = new();
-    public List<Plan> Planes = new();
-    public List<Plan> PlanesFiltrados = new();
+    private Dictionary<string, Dictionary<string, string>>? _traducciones;
+    private Dictionary<string, string> _tipoPlanSeleccionados = new();
 
-    public Plan? PlanSeleccionado = null;
+    private List<Plan> Planes = new();
+    private List<Plan> PlanesFiltrados = new();
 
-    TipoPlanEnum[] ValoresEnum;
-    TipoPlanEnum[] Ubicaciones = new[] { TipoPlanEnum.Cercano, TipoPlanEnum.Lejano, TipoPlanEnum.Interior, TipoPlanEnum.Exterior };
+    private Plan? PlanSeleccionado = null;
 
     private bool MostrandoCartas = false;
     private int CartaSeleccionada = -1;
 
     protected override async Task OnInitializedAsync()
     {
-        Planes = new List<Plan>
-        {
-            new Plan { ID = 1, DESCRIPCION = "🌞 Un videojuego en tu consola de confianza", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Solitario, TipoPlanEnum.Pareja, TipoPlanEnum.Cercano,  TipoPlanEnum.Tecnologia } },
-            new Plan { ID = 2, DESCRIPCION = "💑 Cena romántica en un restaurante.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Comida, TipoPlanEnum.Interior, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 3, DESCRIPCION = "💑 Ver el atardecer en la playa con una copa de vino.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Relajacion, TipoPlanEnum.Cercano } },
-            new Plan { ID = 4, DESCRIPCION = "💑 Es hora de hacer un puzzle", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Solitario, TipoPlanEnum.Interior } },
-            new Plan { ID = 5, DESCRIPCION = "💑 Hacer un Picnic por la montaña", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Relajacion, TipoPlanEnum.Aventura } },
-            new Plan { ID = 6, DESCRIPCION = "💑 Maratón de películas con palomitas en casa.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Interior, TipoPlanEnum.Relajacion, TipoPlanEnum.Cultura } },
-            new Plan { ID = 7, DESCRIPCION = "💑 Paseo en bicicleta por la ciudad.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Aventura, TipoPlanEnum.Cercano, TipoPlanEnum.Deportes } },
-            new Plan { ID = 8, DESCRIPCION = "💑 Hacer una cata de vinos en una bodega.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Cultura, TipoPlanEnum.Comida, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 9, DESCRIPCION = "🎨 Leer un libro en una cafetería acogedora.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Cultura, TipoPlanEnum.Relajacion, TipoPlanEnum.Interior, TipoPlanEnum.Cercano } },
-            new Plan { ID = 10, DESCRIPCION = "🎨 Hacer una caminata reflexiva por el parque.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Relajacion, TipoPlanEnum.Cercano } },
-            new Plan { ID = 11, DESCRIPCION = "🎨 Tomar un curso en línea de algo nuevo.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Aprendizaje } },
-            new Plan { ID = 12, DESCRIPCION = "🎨 Explorar un museo de arte solo.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Cercano } },
-            new Plan { ID = 13, DESCRIPCION = "🎨 Hacer ejercicio en casa con una rutina personalizada.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Interior, TipoPlanEnum.Rapido, TipoPlanEnum.Deportes } },
-            new Plan { ID = 14, DESCRIPCION = "🌞 Día de picnic en el parque con la familia.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Comida, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 15, DESCRIPCION = "🌞 Noche de juegos de mesa en familia.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Interior, TipoPlanEnum.Rapido, TipoPlanEnum.Social } },
-            new Plan { ID = 16, DESCRIPCION = "🌞 Visitar un zoológico o acuario.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano } },
-            new Plan { ID = 17, DESCRIPCION = "🌞 Día de cocina en familia preparando postres.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Comida, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 18, DESCRIPCION = "🌞 Hacer una búsqueda del tesoro en casa o el jardín.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Aventura, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 19, DESCRIPCION = "🌲 Escalada en roca en una montaña cercana.", TIPO_PLAN = new[] { TipoPlanEnum.Aventura, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Deportes } },
-            new Plan { ID = 20, DESCRIPCION = "Buceo o snorkel en un arrecife.", TIPO_PLAN = new[] { TipoPlanEnum.Aventura, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Deportes } },
-            new Plan { ID = 21, DESCRIPCION = "🌲 Hacer paracaidismo o parapente.", TIPO_PLAN = new[] { TipoPlanEnum.Aventura, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Deportes } },
-            new Plan { ID = 22, DESCRIPCION = "🌲 Ruta de senderismo con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Aventura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 23, DESCRIPCION = "Tour en kayak por un río.", TIPO_PLAN = new[] { TipoPlanEnum.Aventura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Deportes } },
-            new Plan { ID = 24, DESCRIPCION = "☕ Día de spa con masajes y sauna.", TIPO_PLAN = new[] { TipoPlanEnum.Relajacion, TipoPlanEnum.Interior, TipoPlanEnum.Cercano, TipoPlanEnum.Solitario } },
-            new Plan { ID = 25, DESCRIPCION = "☕ Hacer yoga en el parque.", TIPO_PLAN = new[] { TipoPlanEnum.Relajacion, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Deportes } },
-            new Plan { ID = 26, DESCRIPCION = "☕ Tomar un baño caliente con velas aromáticas.", TIPO_PLAN = new[] { TipoPlanEnum.Relajacion, TipoPlanEnum.Interior, TipoPlanEnum.Rapido, TipoPlanEnum.Solitario } },
-            new Plan { ID = 27, DESCRIPCION = "☕ Escuchar música relajante mientras se toma un té.", TIPO_PLAN = new[] { TipoPlanEnum.Relajacion, TipoPlanEnum.Interior, TipoPlanEnum.Rapido, TipoPlanEnum.Solitario } },
-            new Plan { ID = 28, DESCRIPCION = "☕ Hacer una sesión de meditación guiada.", TIPO_PLAN = new[] { TipoPlanEnum.Relajacion, TipoPlanEnum.Interior, TipoPlanEnum.Rapido, TipoPlanEnum.Solitario } },
-            new Plan { ID = 29, DESCRIPCION = "🍽 Visitar un mercado de comida callejera.", TIPO_PLAN = new[] { TipoPlanEnum.Comida, TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Social } },
-            new Plan { ID = 30, DESCRIPCION = "🍽 Probar una nueva receta de cocina en casa.", TIPO_PLAN = new[] { TipoPlanEnum.Comida, TipoPlanEnum.Interior, TipoPlanEnum.Rapido, TipoPlanEnum.Solitario } },
-            new Plan { ID = 31, DESCRIPCION = "🍽 Hacer una degustación de postres en una pastelería.", TIPO_PLAN = new[] { TipoPlanEnum.Comida, TipoPlanEnum.Cercano, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 32, DESCRIPCION = "🍽 Organizar una barbacoa con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Comida, TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Social } },
-            new Plan { ID = 33, DESCRIPCION = "🍽 Cena temática cocinando platos de otro país.", TIPO_PLAN = new[] { TipoPlanEnum.Comida, TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 34, DESCRIPCION = "🎨 Visitar una exposición de arte local.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Cercano, TipoPlanEnum.Solitario } },
-            new Plan { ID = 35, DESCRIPCION = "🎭 Ir a una obra de teatro o concierto.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 36, DESCRIPCION = "🎭 Tomar un tour histórico por la ciudad.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Cercano, TipoPlanEnum.Exterior, TipoPlanEnum.Social } },
-            new Plan { ID = 37, DESCRIPCION = "🎨 Ver documentales interesantes sobre otras culturas.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Rapido, TipoPlanEnum.Solitario } },
-            new Plan { ID = 38, DESCRIPCION = "☕ Asistir a un festival gastronómico o cultural.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 39, DESCRIPCION = "🏡 Paseo en bicicleta por la ciudad. 🚴‍♂️", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Aventura, TipoPlanEnum.Cercano, TipoPlanEnum.Deportes } },
-            new Plan { ID = 40, DESCRIPCION = "🏡 Hacer una caminata reflexiva por el parque. 🌿", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Relajacion, TipoPlanEnum.Cercano } },
-            new Plan { ID = 41, DESCRIPCION = "⏩ Ir al cine a ver una película. 🎥", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 42, DESCRIPCION = "🌍 Hacer un viaje espontáneo a otra ciudad. ✈️", TIPO_PLAN = new[] { TipoPlanEnum.Aventura, TipoPlanEnum.Cultura, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 43, DESCRIPCION = "🌍 Hacer una excursión de fin de semana. ⛰️", TIPO_PLAN = new[] { TipoPlanEnum.Aventura, TipoPlanEnum.Lejano, TipoPlanEnum.Relajacion, TipoPlanEnum.Social } },
-            new Plan { ID = 44, DESCRIPCION = "🌍 Tomar un tren y visitar un pueblo histórico. 🚂", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Lejano, TipoPlanEnum.Exterior, TipoPlanEnum.Social } },
-            new Plan { ID = 45, DESCRIPCION = "⚽ Jugar un partido de fútbol con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Deportes, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 46, DESCRIPCION = "🏀 Hacer una competencia de baloncesto en la cancha.", TIPO_PLAN = new[] { TipoPlanEnum.Deportes, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 47, DESCRIPCION = "🏊‍♂️ Practicar natación en una piscina cercana.", TIPO_PLAN = new[] { TipoPlanEnum.Deportes, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Solitario } },
-            new Plan { ID = 48, DESCRIPCION = "🚴‍♂️ Hacer una ruta en bicicleta de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Deportes, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Aventura } },
-            new Plan { ID = 49, DESCRIPCION = "🏌️‍♂️ Jugar golf en un campo cercano.", TIPO_PLAN = new[] { TipoPlanEnum.Deportes, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 50, DESCRIPCION = "🎉 Asistir a un festival de música electrónica.", TIPO_PLAN = new[] { TipoPlanEnum.Fiesta, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 51, DESCRIPCION = "🎤 Ir a un karaoke con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Fiesta, TipoPlanEnum.Interior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 52, DESCRIPCION = "🍻 Visitar una cervecería artesanal con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Fiesta, TipoPlanEnum.Comida, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 53, DESCRIPCION = "🎶 Asistir a un concierto en vivo de tu banda favorita.", TIPO_PLAN = new[] { TipoPlanEnum.Fiesta, TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Social } },
-            new Plan { ID = 54, DESCRIPCION = "🍸 Ir a una fiesta en un club nocturno.", TIPO_PLAN = new[] { TipoPlanEnum.Fiesta, TipoPlanEnum.Interior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 55, DESCRIPCION = "👫 Organizar una cena con amigos para socializar.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Comida, TipoPlanEnum.Interior, TipoPlanEnum.Familiar } },
-            new Plan { ID = 56, DESCRIPCION = "👫 Participar en una actividad grupal como paintball.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Aventura, TipoPlanEnum.Cercano, TipoPlanEnum.Fiesta } },
-            new Plan { ID = 57, DESCRIPCION = "👫 Asistir a una reunión de intercambio cultural.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Aprendizaje } },
-            new Plan { ID = 58, DESCRIPCION = "🎮 Jugar videojuegos en línea con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Tecnologia, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta } },
-            new Plan { ID = 59, DESCRIPCION = "🎤 Ir a un evento de networking en tu ciudad.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Cultura, TipoPlanEnum.Cercano, TipoPlanEnum.Aprendizaje } },
-            new Plan { ID = 60, DESCRIPCION = "📚 Tomar un curso de cocina en línea.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario } },
-            new Plan { ID = 61, DESCRIPCION = "🧑‍🏫 Participar en un taller de cerámica.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 62, DESCRIPCION = "🎓 Asistir a una charla sobre desarrollo personal.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Cultura, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 63, DESCRIPCION = "📖 Leer un libro sobre historia o ciencia.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Cultura, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 64, DESCRIPCION = "💻 Participar en un hackatón o competencia tecnológica.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Tecnologia, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 65, DESCRIPCION = "🕵️‍♂️ Participar en un escape room temático.", TIPO_PLAN = new[] { TipoPlanEnum.Misterio, TipoPlanEnum.Aventura, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 66, DESCRIPCION = "🕵️‍♂️ Hacer una caminata nocturna en busca de leyendas urbanas.", TIPO_PLAN = new[] { TipoPlanEnum.Misterio, TipoPlanEnum.Aventura, TipoPlanEnum.Exterior, TipoPlanEnum.Social } },
-            new Plan { ID = 67, DESCRIPCION = "👻 Asistir a una casa del terror o evento de misterio.", TIPO_PLAN = new[] { TipoPlanEnum.Misterio, TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta } },
-            new Plan { ID = 68, DESCRIPCION = "🕵️‍♂️ Organizar una noche de misterio con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Misterio, TipoPlanEnum.Fiesta, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 69, DESCRIPCION = "🎩 Ir a una obra de teatro de misterio.", TIPO_PLAN = new[] { TipoPlanEnum.Misterio, TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 70, DESCRIPCION = "👨‍💻 Asistir a una conferencia sobre inteligencia artificial.", TIPO_PLAN = new[] { TipoPlanEnum.Tecnologia, TipoPlanEnum.Cultura, TipoPlanEnum.Lejano, TipoPlanEnum.Aprendizaje } },
-            new Plan { ID = 71, DESCRIPCION = "📱 Participar en una hackathon en línea.", TIPO_PLAN = new[] { TipoPlanEnum.Tecnologia, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 72, DESCRIPCION = "🖥️ Visitar una feria de tecnología o gadgets.", TIPO_PLAN = new[] { TipoPlanEnum.Tecnologia, TipoPlanEnum.Cultura, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 73, DESCRIPCION = "🔧 Crear un proyecto de robótica con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Tecnologia, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 74, DESCRIPCION = "🌳 Hacer una caminata en la naturaleza.", TIPO_PLAN = new[] {  TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 75, DESCRIPCION = "📖 Leer un libro en la biblioteca local.", TIPO_PLAN = new[] {  TipoPlanEnum.Cultura, TipoPlanEnum.Cercano, TipoPlanEnum.Solitario } },
-            new Plan { ID = 76, DESCRIPCION = "🎤 Participar en una charla gratuita sobre algún tema de interés.", TIPO_PLAN = new[] {  TipoPlanEnum.Aprendizaje, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 77, DESCRIPCION = "🎨 Hacer un picnic en el parque con amigos.", TIPO_PLAN = new[] {  TipoPlanEnum.Comida, TipoPlanEnum.Exterior, TipoPlanEnum.Social } },
-            new Plan { ID = 78, DESCRIPCION = "🏞️ Hacer una visita a un parque natural local.", TIPO_PLAN = new[] {  TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 79, DESCRIPCION = "🌅 Ver el amanecer desde un mirador.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 80, DESCRIPCION = "🛶 Pasear en bote por un lago o río.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Aventura, TipoPlanEnum.Exterior, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 81, DESCRIPCION = "🎤 Organizar una noche de karaoke en casa.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Fiesta, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 82, DESCRIPCION = "🖼️ Visitar una galería de arte contemporáneo.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Cercano, TipoPlanEnum.Solitario } },
-            new Plan { ID = 83, DESCRIPCION = "🍫 Hacer una degustación de chocolates artesanales.", TIPO_PLAN = new[] { TipoPlanEnum.Comida, TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 84, DESCRIPCION = "🏕️ Acampar en la montaña con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Aventura, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 85, DESCRIPCION = "🎲 Jugar juegos de rol con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Aprendizaje } },
-            new Plan { ID = 86, DESCRIPCION = "🛍️ Ir de compras a un mercado local.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 87, DESCRIPCION = "📸 Hacer una sesión de fotos en un lugar pintoresco.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cultura } },
-            new Plan { ID = 88, DESCRIPCION = "🍵 Tomar una clase de ceremonia del té.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario } },
-            new Plan { ID = 89, DESCRIPCION = "🧘‍♀️ Practicar yoga al aire libre.", TIPO_PLAN = new[] { TipoPlanEnum.Relajacion, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Solitario } },
-            new Plan { ID = 90, DESCRIPCION = "🎧 Escuchar un podcast en un parque.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Relajacion, TipoPlanEnum.Cercano } },
-            new Plan { ID = 91, DESCRIPCION = "🛤️ Recorrer una ruta en tren turístico.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 92, DESCRIPCION = "🎪 Asistir a un circo o espectáculo callejero.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Familiar } },
-            new Plan { ID = 93, DESCRIPCION = "🍩 Hacer un tour de cafeterías y panaderías.", TIPO_PLAN = new[] { TipoPlanEnum.Comida, TipoPlanEnum.Cultura, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 94, DESCRIPCION = "🛹 Practicar skateboarding en un parque.", TIPO_PLAN = new[] { TipoPlanEnum.Deportes, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 95, DESCRIPCION = "🎳 Jugar bolos con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Deportes } },
-            new Plan { ID = 96, DESCRIPCION = "🪁 Volar cometas en un campo abierto.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 97, DESCRIPCION = "🎡 Visitar un parque de atracciones.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Fiesta } },
-            new Plan { ID = 98, DESCRIPCION = "🛍️ Ir de compras a un centro comercial.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Cercano, TipoPlanEnum.Familiar } },
-            new Plan { ID = 99, DESCRIPCION = "🎨 Pintar un cuadro en un taller de arte.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario } },
-            new Plan { ID = 100, DESCRIPCION = "🍷 Visitar una viña y hacer una cata de vinos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Comida, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 101, DESCRIPCION = "🛶 Hacer rafting en un río.", TIPO_PLAN = new[] { TipoPlanEnum.Aventura, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 102, DESCRIPCION = "🏰 Visitar un castillo o fortaleza histórica.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 103, DESCRIPCION = "🎭 Asistir a un festival de teatro al aire libre.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Lejano, TipoPlanEnum.Social } },
-            new Plan { ID = 104, DESCRIPCION = "🍂 Recoger hojas en otoño y hacer manualidades.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Aprendizaje } },
-            new Plan { ID = 105, DESCRIPCION = "🎄 Decorar la casa para Navidad.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Interior, TipoPlanEnum.Relajacion, TipoPlanEnum.Social } },
-            new Plan { ID = 106, DESCRIPCION = "🎆 Ver fuegos artificiales en la playa.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Fiesta } },
-            new Plan { ID = 107, DESCRIPCION = "🛌 Hacer una noche de pijamas con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 108, DESCRIPCION = "🎲 Jugar juegos de mesa clásicos.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Interior, TipoPlanEnum.Social, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 109, DESCRIPCION = "🛍️ Ir a una feria de artesanías.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 110, DESCRIPCION = "🍁 Hacer una caminata por un bosque en otoño.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 111, DESCRIPCION = "🎣 Ir de pesca a un lago cercano.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 112, DESCRIPCION = "🛶 Pasear en canoa por un río tranquilo.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 113, DESCRIPCION = "🎨 Hacer un mural en una pared comunitaria.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 114, DESCRIPCION = "🍿 Organizar una noche de cine en casa con amigos.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 115, DESCRIPCION = "🛍️ Ir de compras a un mercado de pulgas.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 116, DESCRIPCION = "🎨 Hacer una manualidad con materiales reciclados.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 117, DESCRIPCION = "🍂 Hacer una fogata y asar malvaviscos.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 118, DESCRIPCION = "🎭 Asistir a un taller de improvisación teatral.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 119, DESCRIPCION = "🛍️ Ir de compras a un mercado de agricultores.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 120, DESCRIPCION = "🎨 Hacer un collage con fotos antiguas.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 121, DESCRIPCION = "🍂 Hacer una caminata por un sendero natural.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 122, DESCRIPCION = "🎣 Ir de pesca en un río cercano.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 123, DESCRIPCION = "🛶 Pasear en kayak por un lago.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 124, DESCRIPCION = "🎨 Hacer un taller de pintura al aire libre.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 125, DESCRIPCION = "🍿 Organizar una noche de películas clásicas.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 126, DESCRIPCION = "🛍️ Ir de compras a un mercado de antigüedades.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 127, DESCRIPCION = "🎨 Hacer una manualidad con arcilla.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 128, DESCRIPCION = "🍂 Hacer una fogata y contar historias.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 129, DESCRIPCION = "🎭 Asistir a un taller de escritura creativa.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 130, DESCRIPCION = "🛍️ Ir de compras a un mercado de libros usados.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 131, DESCRIPCION = "🎨 Hacer un álbum de recortes.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 132, DESCRIPCION = "🍂 Hacer una caminata por un bosque.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 133, DESCRIPCION = "🎣 Ir de pesca en un lago.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 134, DESCRIPCION = "🛶 Pasear en bote por un río.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 135, DESCRIPCION = "🎨 Hacer un taller de escultura.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 136, DESCRIPCION = "🍿 Organizar una noche de películas de terror.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Misterio } },
-            new Plan { ID = 137, DESCRIPCION = "🛍️ Ir de compras a un mercado de artesanías.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 138, DESCRIPCION = "🎨 Hacer una manualidad con papel maché.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 139, DESCRIPCION = "🍂 Hacer una fogata y cantar canciones.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 140, DESCRIPCION = "🎭 Asistir a un taller de danza.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 141, DESCRIPCION = "🛍️ Ir de compras a un mercado de flores.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 142, DESCRIPCION = "🎨 Hacer un álbum de fotos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 143, DESCRIPCION = "🍂 Hacer una caminata por un parque nacional.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 144, DESCRIPCION = "🎣 Ir de pesca en un río.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 145, DESCRIPCION = "🛶 Pasear en canoa por un lago.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 146, DESCRIPCION = "🎨 Hacer un taller de cerámica.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 147, DESCRIPCION = "🍿 Organizar una noche de películas de comedia.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 148, DESCRIPCION = "🛍️ Ir de compras a un mercado de alimentos orgánicos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 149, DESCRIPCION = "🎨 Hacer una manualidad con telas.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 150, DESCRIPCION = "🍂 Hacer una fogata y hacer s'mores.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 151, DESCRIPCION = "🎭 Asistir a un taller de música.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 152, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos locales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 153, DESCRIPCION = "🎨 Hacer un álbum de recuerdos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 154, DESCRIPCION = "🍂 Hacer una caminata por un sendero montañoso.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 155, DESCRIPCION = "🎣 Ir de pesca en un lago de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 156, DESCRIPCION = "🛶 Pasear en bote por un río de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 157, DESCRIPCION = "🎨 Hacer un taller de pintura en acuarela.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 158, DESCRIPCION = "🍿 Organizar una noche de películas de ciencia ficción.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Tecnologia } },
-            new Plan { ID = 159, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos artesanales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 160, DESCRIPCION = "🎨 Hacer una manualidad con materiales naturales.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 161, DESCRIPCION = "🍂 Hacer una fogata y observar las estrellas.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 162, DESCRIPCION = "🎭 Asistir a un taller de fotografía.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 163, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos ecológicos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 164, DESCRIPCION = "🎨 Hacer un álbum de viajes.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 165, DESCRIPCION = "🍂 Hacer una caminata por un bosque lluvioso.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 166, DESCRIPCION = "🎣 Ir de pesca en un río de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 167, DESCRIPCION = "🛶 Pasear en bote por un lago de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 168, DESCRIPCION = "🎨 Hacer un taller de dibujo al aire libre.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 169, DESCRIPCION = "🍿 Organizar una noche de películas de animación.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Familiar } },
-            new Plan { ID = 170, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos locales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 171, DESCRIPCION = "🎨 Hacer una manualidad con materiales reciclados.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 172, DESCRIPCION = "🍂 Hacer una fogata y contar historias de miedo.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Misterio } },
-            new Plan { ID = 173, DESCRIPCION = "🎭 Asistir a un taller de teatro.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 174, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos orgánicos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 175, DESCRIPCION = "🎨 Hacer un álbum de recuerdos de viajes.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 176, DESCRIPCION = "🍂 Hacer una caminata por un bosque tropical.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 177, DESCRIPCION = "🎣 Ir de pesca en un lago tropical.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 178, DESCRIPCION = "🛶 Pasear en bote por un río tropical.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 179, DESCRIPCION = "🎨 Hacer un taller de pintura al óleo.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 180, DESCRIPCION = "🍿 Organizar una noche de películas clásicas.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 181, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos artesanales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 182, DESCRIPCION = "🎨 Hacer una manualidad con arcilla.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 183, DESCRIPCION = "🍂 Hacer una fogata y cantar canciones.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 184, DESCRIPCION = "🎭 Asistir a un taller de escritura creativa.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 185, DESCRIPCION = "🛍️ Ir de compras a un mercado de libros usados.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 186, DESCRIPCION = "🎨 Hacer un álbum de recortes.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 187, DESCRIPCION = "🍂 Hacer una caminata por un bosque.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 188, DESCRIPCION = "🎣 Ir de pesca en un lago.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 189, DESCRIPCION = "🛶 Pasear en bote por un río.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 190, DESCRIPCION = "🎨 Hacer un taller de escultura.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 191, DESCRIPCION = "🍿 Organizar una noche de películas de terror.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Misterio } },
-            new Plan { ID = 192, DESCRIPCION = "🛍️ Ir de compras a un mercado de artesanías.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 193, DESCRIPCION = "🎨 Hacer una manualidad con papel maché.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 194, DESCRIPCION = "🍂 Hacer una fogata y cantar canciones.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 195, DESCRIPCION = "🎭 Asistir a un taller de danza.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 196, DESCRIPCION = "🛍️ Ir de compras a un mercado de flores.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 197, DESCRIPCION = "🎨 Hacer un álbum de fotos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 198, DESCRIPCION = "🍂 Hacer una caminata por un parque nacional.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 199, DESCRIPCION = "🎣 Ir de pesca en un río.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 200, DESCRIPCION = "🛶 Pasear en canoa por un lago.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 201, DESCRIPCION = "🎨 Hacer un taller de cerámica.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 202, DESCRIPCION = "🍿 Organizar una noche de películas de comedia.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 203, DESCRIPCION = "🛍️ Ir de compras a un mercado de alimentos orgánicos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 204, DESCRIPCION = "🎨 Hacer una manualidad con telas.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 205, DESCRIPCION = "🍂 Hacer una fogata y hacer s'mores.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 206, DESCRIPCION = "🎭 Asistir a un taller de música.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 207, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos locales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 208, DESCRIPCION = "🎨 Hacer un álbum de recuerdos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 209, DESCRIPCION = "🍂 Hacer una caminata por un sendero montañoso.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 210, DESCRIPCION = "🎣 Ir de pesca en un lago de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 211, DESCRIPCION = "🛶 Pasear en bote por un río de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 212, DESCRIPCION = "🎨 Hacer un taller de pintura en acuarela.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 213, DESCRIPCION = "🍿 Organizar una noche de películas de ciencia ficción.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Tecnologia } },
-            new Plan { ID = 214, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos artesanales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 215, DESCRIPCION = "🎨 Hacer una manualidad con materiales naturales.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 216, DESCRIPCION = "🍂 Hacer una fogata y observar las estrellas.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 217, DESCRIPCION = "🎭 Asistir a un taller de fotografía.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 218, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos ecológicos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 219, DESCRIPCION = "🎨 Hacer un álbum de viajes.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 220, DESCRIPCION = "🍂 Hacer una caminata por un bosque lluvioso.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 221, DESCRIPCION = "🎣 Ir de pesca en un río de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 222, DESCRIPCION = "🛶 Pasear en bote por un lago de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 223, DESCRIPCION = "🎨 Hacer un taller de dibujo al aire libre.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 224, DESCRIPCION = "🍿 Organizar una noche de películas de animación.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Familiar } },
-            new Plan { ID = 225, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos locales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 226, DESCRIPCION = "🎨 Hacer una manualidad con materiales reciclados.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 227, DESCRIPCION = "🍂 Hacer una fogata y contar historias de miedo.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Misterio } },
-            new Plan { ID = 228, DESCRIPCION = "🎭 Asistir a un taller de teatro.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 229, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos orgánicos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 230, DESCRIPCION = "🎨 Hacer un álbum de recuerdos de viajes.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 231, DESCRIPCION = "🍂 Hacer una caminata por un bosque tropical.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 232, DESCRIPCION = "🎣 Ir de pesca en un lago tropical.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 233, DESCRIPCION = "🛶 Pasear en bote por un río tropical.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 234, DESCRIPCION = "🎨 Hacer un taller de pintura al óleo.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 235, DESCRIPCION = "🍿 Organizar una noche de películas clásicas.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 236, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos artesanales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 237, DESCRIPCION = "🎨 Hacer una manualidad con arcilla.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 238, DESCRIPCION = "🍂 Hacer una fogata y cantar canciones.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 240, DESCRIPCION = "🎭 Asistir a un taller de escritura creativa.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 241, DESCRIPCION = "🛍️ Ir de compras a un mercado de libros usados.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 242, DESCRIPCION = "🎨 Hacer un álbum de recortes.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 243, DESCRIPCION = "🍂 Hacer una caminata por un bosque.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 244, DESCRIPCION = "🎣 Ir de pesca en un lago.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 245, DESCRIPCION = "🛶 Pasear en bote por un río.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 246, DESCRIPCION = "🎨 Hacer un taller de escultura.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 247, DESCRIPCION = "🍿 Organizar una noche de películas de terror.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Misterio } },
-            new Plan { ID = 248, DESCRIPCION = "🛍️ Ir de compras a un mercado de artesanías.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 249, DESCRIPCION = "🎨 Hacer una manualidad con papel maché.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 250, DESCRIPCION = "🍂 Hacer una fogata y cantar canciones.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 251, DESCRIPCION = "🎭 Asistir a un taller de danza.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 252, DESCRIPCION = "🛍️ Ir de compras a un mercado de flores.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 253, DESCRIPCION = "🎨 Hacer un álbum de fotos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 254, DESCRIPCION = "🍂 Hacer una caminata por un parque nacional.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 255, DESCRIPCION = "🎣 Ir de pesca en un río.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 256, DESCRIPCION = "🛶 Pasear en canoa por un lago.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 257, DESCRIPCION = "🎨 Hacer un taller de cerámica.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 258, DESCRIPCION = "🍿 Organizar una noche de películas de comedia.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 259, DESCRIPCION = "🛍️ Ir de compras a un mercado de alimentos orgánicos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 260, DESCRIPCION = "🎨 Hacer una manualidad con telas.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 261, DESCRIPCION = "🍂 Hacer una fogata y hacer s'mores.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 262, DESCRIPCION = "🎭 Asistir a un taller de música.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 263, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos locales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 264, DESCRIPCION = "🎨 Hacer un álbum de recuerdos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 265, DESCRIPCION = "🍂 Hacer una caminata por un sendero montañoso.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 266, DESCRIPCION = "🎣 Ir de pesca en un lago de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 267, DESCRIPCION = "🛶 Pasear en bote por un río de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 268, DESCRIPCION = "🎨 Hacer un taller de pintura en acuarela.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 269, DESCRIPCION = "🍿 Organizar una noche de películas de ciencia ficción.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Tecnologia } },
-            new Plan { ID = 270, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos artesanales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 271, DESCRIPCION = "🎨 Hacer una manualidad con materiales naturales.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 272, DESCRIPCION = "🍂 Hacer una fogata y observar las estrellas.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 273, DESCRIPCION = "🎭 Asistir a un taller de fotografía.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } },
-            new Plan { ID = 274, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos ecológicos.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 275, DESCRIPCION = "🎨 Hacer un álbum de viajes.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 276, DESCRIPCION = "🍂 Hacer una caminata por un bosque lluvioso.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 277, DESCRIPCION = "🎣 Ir de pesca en un río de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Solitario, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 278, DESCRIPCION = "🛶 Pasear en bote por un lago de montaña.", TIPO_PLAN = new[] { TipoPlanEnum.Pareja, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Relajacion } },
-            new Plan { ID = 279, DESCRIPCION = "🎨 Hacer un taller de dibujo al aire libre.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 280, DESCRIPCION = "🍿 Organizar una noche de películas de animación.", TIPO_PLAN = new[] { TipoPlanEnum.Social, TipoPlanEnum.Interior, TipoPlanEnum.Fiesta, TipoPlanEnum.Familiar } },
-            new Plan { ID = 281, DESCRIPCION = "🛍️ Ir de compras a un mercado de productos locales.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Social } },
-            new Plan { ID = 282, DESCRIPCION = "🎨 Hacer una manualidad con materiales reciclados.", TIPO_PLAN = new[] { TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Solitario, TipoPlanEnum.Cultura } },
-            new Plan { ID = 283, DESCRIPCION = "🍂 Hacer una fogata y contar historias de miedo.", TIPO_PLAN = new[] { TipoPlanEnum.Familiar, TipoPlanEnum.Exterior, TipoPlanEnum.Cercano, TipoPlanEnum.Misterio } },
-            new Plan { ID = 284, DESCRIPCION = "🎭 Asistir a un taller de teatro.", TIPO_PLAN = new[] { TipoPlanEnum.Cultura, TipoPlanEnum.Aprendizaje, TipoPlanEnum.Interior, TipoPlanEnum.Social } }
-        };
+        Planes = FuncionesGlobales.GetPlans(Idioma);
+        _traducciones = await TranslationsService.LoadJsonAsync();
 
-        ValoresEnum = Enum.GetValues<TipoPlanEnum>();
+        var filteredTranslations = _traducciones
+            .Where(entry => entry.Value.ContainsKey(Idioma))
+            .ToDictionary(
+                entry => entry.Key,
+                entry => entry.Value
+                    .Where(lang => lang.Key == Idioma)
+                    .ToDictionary(lang => lang.Key, lang => lang.Value)
+            );
+
+        _traducciones = new(filteredTranslations);
+
         PlanesFiltrados = new(Planes);
     }
 
@@ -384,21 +103,21 @@
         StateHasChanged();
     }
 
-    private void ActualizarFiltro(TipoPlanEnum tipo, object valor)
+    private void ActualizarFiltro(string tipo, object valor)
     {
-        if (TipoPlanSeleccionados.ContainsKey(tipo))
+        if (_tipoPlanSeleccionados.ContainsKey(tipo))
         {
-            TipoPlanSeleccionados.Remove(tipo);
+            _tipoPlanSeleccionados.Remove(tipo);
             return;
         }
 
-        TipoPlanSeleccionados[tipo] = (string)valor;
+        _tipoPlanSeleccionados[tipo] = (string)valor;
 
-        var filtrosActivos = TipoPlanSeleccionados.Where(kvp => kvp.Value == tipo.ToString()).Select(kvp => kvp.Key).ToList();
+        var filtrosActivos = _tipoPlanSeleccionados.Where(kvp => kvp.Value == tipo.ToString()).Select(kvp => kvp.Key).ToList();
 
         if (filtrosActivos.Any())
         {
-            PlanesFiltrados = Planes.Where(p => p.TIPO_PLAN.Any(filtrosActivos.Contains)).ToList();
+            PlanesFiltrados = Planes.Where(p => filtrosActivos.Contains(p.TIPO_PLAN.ToString())).ToList();
         }
         else
         {

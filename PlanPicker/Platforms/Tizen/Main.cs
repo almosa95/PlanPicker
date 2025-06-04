@@ -2,7 +2,7 @@ using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
-namespace PlanazosPicker
+namespace PlanPicker
 {
     internal class Program : MauiApplication
     {

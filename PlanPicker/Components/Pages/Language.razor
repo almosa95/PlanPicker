@@ -1,0 +1,59 @@
+﻿@page "/"
+@using PlanPicker.Modelos
+@using static PlanPicker.Modelos.FuncionesGlobalesEnums
+
+<style>
+    .language-selector {
+        margin-top: 1rem;
+        display: flex;
+        height: 50px;
+        gap: 10px;
+        justify-self: center;
+    }
+
+    .lang-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        outline: none;
+    }
+
+        .lang-btn img {
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+            height: 50px;
+            width: 50px;
+        }
+
+            .lang-btn img:hover {
+                transform: scale(1.1);
+            }
+</style>
+
+<div class="container" style="height: 97vh; align-content: center;">
+    <h3>Select your language:</h3>
+
+    <div class="language-selector">
+        @{
+            string idiomaESP = "es";
+            string idiomaENG = "en";
+        }
+        <button class="lang-btn" @onclick="() => SetLanguage(idiomaESP)">
+            <img src="img/langESP.jpg" alt="Español" />
+        </button>
+        <button class="lang-btn" @onclick="() => SetLanguage(idiomaENG)">
+            <img src="img/langEU.png" alt="English" />
+        </button>
+    </div>
+</div>
+
+
+@code {
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+    void SetLanguage(string idioma)
+    {
+        NavigationManager.NavigateTo($"/home/{idioma}");
+    }
+}

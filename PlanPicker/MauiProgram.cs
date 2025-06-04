@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace PlanazosPicker
+namespace PlanPicker
 {
     public static class MauiProgram
     {
@@ -16,9 +16,10 @@ namespace PlanazosPicker
 
             builder.Services.AddMauiBlazorWebView();
 
+            builder.Services.AddScoped<TranslationService>();
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
-    		builder.Logging.AddDebug();
+            builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Logging.AddDebug();
 #endif
 
             return builder.Build();

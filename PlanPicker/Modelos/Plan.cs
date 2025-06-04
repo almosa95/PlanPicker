@@ -1,12 +1,12 @@
-﻿using static PlanazosPicker.Modelos.FuncionesGlobalesEnums;
+﻿using static PlanPicker.Modelos.FuncionesGlobalesEnums;
 
-namespace PlanazosPicker.Modelos
+namespace PlanPicker.Modelos
 {
     public class Plan
     {
         public long ID { get; set; }
         public string DESCRIPCION { get; set; }
-        public TipoPlanEnum[] TIPO_PLAN { get; set; }
+        public PlanTypeEnum[] TIPO_PLAN { get; set; }
     }
 }
 

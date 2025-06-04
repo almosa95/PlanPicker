@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace PlanazosPicker
+namespace PlanPicker
 {
     [Register("AppDelegate")]
     public class AppDelegate : MauiUIApplicationDelegate

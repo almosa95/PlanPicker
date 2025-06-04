@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace PlanazosPicker
+namespace PlanPicker
 {
     public class Program
     {
