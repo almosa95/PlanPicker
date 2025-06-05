@@ -3,47 +3,51 @@
 @using PlanPicker.Modelos
 @using static PlanPicker.Modelos.FuncionesGlobalesEnums
 
-<div class="container" style="height: 97vh; align-content: center;">
-    <h3 style="font-size: 27px;">@(Idioma == "es" ? "Selecciona el tipo o los tipos de plan:" : "Select one or more plan types:")</h3>
+@* <div style="background-image: url('img/fondo.jpg')"> *@
+<div>
+    <div class="container" style="height: 97vh; display: flex; flex-direction: column; justify-content: center;">
+        <h3 style="font-size: 27px;">@(Idioma == "es" ? "Selecciona el tipo o los tipos de plan:" : "Select one or more plan types:")</h3>
 
-    @if (_traducciones != null)
-    {
-        <div class="checkbox-container">
-            @foreach (var tipo in _traducciones)
-            {
-                <label class="checkbox-label @(_tipoPlanSeleccionados.ContainsKey(tipo.Key) ? "active" : "")" @onclick="(e) => ActualizarFiltro(tipo.Key.ToString(), tipo.Key.ToString())">
-                    @tipo.Value[Idioma]
-                </label>
-            }
-        </div>
-    }
+        @if (_traducciones != null)
+        {
+            <div class="checkbox-container">
+                @foreach (var tipo in _traducciones)
+                {
+                    <label class="checkbox-label @(_tipoPlanSeleccionados.ContainsKey(tipo.Key) ? "active" : "")" @onclick="(e) => ActualizarFiltro(tipo.Key.ToString(), tipo.Key.ToString())">
+                        @tipo.Value[Idioma]
+                    </label>
+                }
+            </div>
+        }
 
-    <button class="btn-descubrir" @onclick="IniciarAnimacion">@(Idioma == "es" ? "DESCUBRIR UN PLAN" : "DISCOVER A PLAN")</button>
+        <button class="btn-descubrir" @onclick="IniciarAnimacion">@(Idioma == "es" ? "DESCUBRIR UN PLAN" : "DISCOVER A PLAN")</button>
 
-    @if (MostrandoCartas)
-    {
-        <div class="baraja">
-            @for (int i = 0; i < 5; i++)
-            {
-                <div class="carta @(i == CartaSeleccionada ? "seleccionada" : "")" @onclick="() => SeleccionarCarta(i)">
-                    <span>🎴</span>
-                </div>
-            }
-        </div>
-    }
+        @if (MostrandoCartas)
+        {
+            <div class="baraja">
+                @for (int i = 0; i < 5; i++)
+                {
+                    <div class="carta @(i == CartaSeleccionada ? "seleccionada" : "")" @onclick="() => SeleccionarCarta(i)">
+                        <span>🎴</span>
+                    </div>
+                }
+            </div>
+        }
 
-    @if (PlanSeleccionado != null)
-    {
-        <div class="resultado">
-            <h2>@(Idioma == "es" ? "¡Tu Plan es...! " : "Your plan is...! ")🎉</h2>
-            <p>@PlanSeleccionado.DESCRIPCION</p>
-        </div>
-    }
+        @if (PlanSeleccionado != null)
+        {
+            <div class="resultado">
+                <h2>@(Idioma == "es" ? "¡Tu Plan es...! " : "Your plan is...! ")🎉</h2>
+                <p>@PlanSeleccionado.DESCRIPCION</p>
+            </div>
+        }
 
-    <button style="border: none; background: inherit;  position: absolute; right: 10px; bottom: 20px;" @onclick="IrAPolitica">
-        @(Idioma == "es" ? "Ver política de privacidad" : "Show privacy policy")
-    </button>
+        <button style="border: none; background: inherit;  position: absolute; right: 10px; bottom: 20px;" @onclick="IrAPolitica">
+            @(Idioma == "es" ? "Ver política de privacidad" : "Show privacy policy")
+        </button>
+    </div>
 </div>
+
 
 
 @code {
