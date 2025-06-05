@@ -97,9 +97,12 @@
     {
         CartaSeleccionada = index;
         var random = new Random();
-        PlanSeleccionado = PlanesFiltrados[random.Next(PlanesFiltrados.Count)];
-        MostrandoCartas = false;
-        StateHasChanged();
+        if (PlanesFiltrados.Count > 0)
+        {
+            PlanSeleccionado = PlanesFiltrados[random.Next(PlanesFiltrados.Count)];
+            MostrandoCartas = false;
+            StateHasChanged();
+        }
     }
 
     private void ActualizarFiltro(string tipo, object valor)
@@ -112,12 +115,14 @@
 
         _tipoPlanSeleccionados[tipo] = (string)valor;
 
-        var filtrosActivos = _tipoPlanSeleccionados.Where(kvp => kvp.Value == tipo.ToString()).Select(kvp => kvp.Key).ToList();
+        var filtrosActivos = _tipoPlanSeleccionados.Select(kvp => kvp.Key).ToList();
 
         if (filtrosActivos.Any())
         {
             PlanesFiltrados = Planes
-            .Where(plan => plan.TIPO_PLAN.Any(tipo => filtrosActivos.Contains(tipo.ToString())))
+            .Where(plan =>
+            filtrosActivos.All(filtro =>
+                plan.TIPO_PLAN.Select(t => t.ToString()).Contains(filtro)))
             .ToList();
         }
         else
