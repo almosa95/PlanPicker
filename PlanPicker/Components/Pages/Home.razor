@@ -6,7 +6,7 @@
 @* <div style="background-image: url('img/fondo.jpg')"> *@
 <div>
     <div class="container" style="height: 97vh; display: flex; flex-direction: column; justify-content: center;">
-        <h3 style="font-size: 27px;">@(Idioma == "es" ? "Selecciona el tipo o los tipos de plan:" : "Select one or more plan types:")</h3>
+        <h3 style="font-size: 25px;">@(Idioma == "es" ? "Selecciona el tipo o los tipos de plan:" : "Select one or more plan types:")</h3>
 
         @if (_traducciones != null)
         {
@@ -41,11 +41,11 @@
                 <p>@PlanSeleccionado.DESCRIPCION</p>
             </div>
         }
-
-        <button style="border: none; background: inherit;  position: absolute; right: 10px; bottom: 20px;" @onclick="IrAPolitica">
-            @(Idioma == "es" ? "Ver política de privacidad" : "Show privacy policy")
-        </button>
     </div>
+
+    <button style="border: none; background: inherit;  position: absolute; bottom: 10px; right: 0px;" @onclick="IrAPolitica">
+        @(Idioma == "es" ? "Ver política de privacidad" : "Show privacy policy")
+    </button>
 </div>
 
 

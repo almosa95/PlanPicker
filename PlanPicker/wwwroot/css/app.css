@@ -119,9 +119,11 @@ h1 {
     font-size: 18px;
     font-weight: bold;
     border: none;
+    width: 350px;
     border-radius: 25px;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    align-self: center;
 }
 
     .btn-descubrir:hover {
@@ -140,7 +142,7 @@ h1 {
 
 .carta {
     flex: 1;
-    height: 120px;
+    height: 85px;
     background: #ffffff;
     border-radius: 10px;
     display: flex;
@@ -214,12 +216,13 @@ h1 {
     display: flex;
     gap: 10px;
     max-width: 350px;
-    margin: auto;
+    margin: 40px;
     flex-wrap: wrap;
+    align-self: center;
 }
 
 .checkbox-label {
-    max-width: 110px;
+    flex: 1 1 calc(33.333% - 10px); /* 3 por fila menos el gap */
     display: flex;
     align-items: center;
     font-size: 15px;
@@ -227,7 +230,6 @@ h1 {
     place-content: center;
     cursor: pointer;
     background-color: #f8f8f8;
-    flex: 1;
     padding: 8px 12px;
     border-radius: 8px;
     border: 2px solid transparent;
