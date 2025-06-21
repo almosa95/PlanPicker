@@ -100,9 +100,10 @@
         if (PlanesFiltrados.Count > 0)
         {
             PlanSeleccionado = PlanesFiltrados[random.Next(PlanesFiltrados.Count)];
-            MostrandoCartas = false;
-            StateHasChanged();
         }
+
+        MostrandoCartas = false;
+        StateHasChanged();
     }
 
     private void ActualizarFiltro(string tipo, object valor)
