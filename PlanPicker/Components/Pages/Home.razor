@@ -20,7 +20,14 @@
             </div>
         }
 
-        <button class="btn-descubrir" @onclick="IniciarAnimacion">@(Idioma == "es" ? "DESCUBRIR UN PLAN" : "DISCOVER A PLAN")</button>
+        @if (!SeHaSeleccionadoPlan)
+        {
+            <button class="btn-descubrir" @onclick="IniciarAnimacion">@(Idioma == "es" ? "DESCUBRIR UN PLAN" : "DISCOVER A PLAN")</button>
+        }
+        else
+        {
+            <button class="btn-descubrir" @onclick="IniciarAnimacion">@(Idioma == "es" ? "DESCUBRIR OTRO PLAN" : "DISCOVER NEW PLAN")</button>
+        }
 
         @if (MostrandoCartas)
         {
@@ -40,6 +47,11 @@
                 <h2>@(Idioma == "es" ? "¡Tu Plan es...! " : "Your plan is...! ")🎉</h2>
                 <p>@PlanSeleccionado.DESCRIPCION</p>
             </div>
+        }
+
+        @if (NoSeHaEncontradoPlan)
+        {
+            <p>@(Idioma == "es" ? "No se ha encontrado un plan que cumpla las condiciones..! " : "There's no plan with this filters..! ")</p>
         }
     </div>
 
@@ -63,7 +75,10 @@
 
     private Plan? PlanSeleccionado = null;
 
+    private bool NoSeHaEncontradoPlan = false;
     private bool MostrandoCartas = false;
+    private bool SeHaSeleccionadoPlan = false;
+
     private int CartaSeleccionada = -1;
 
     protected override async Task OnInitializedAsync()
@@ -87,8 +102,11 @@
 
     private void IniciarAnimacion()
     {
+        NoSeHaEncontradoPlan = false;
         MostrandoCartas = true;
+        SeHaSeleccionadoPlan = false;
         PlanSeleccionado = null;
+
         CartaSeleccionada = -1;
         StateHasChanged();
     }
@@ -101,9 +119,19 @@
         {
             PlanSeleccionado = PlanesFiltrados[random.Next(PlanesFiltrados.Count)];
         }
+        else
+        {
+            MostrarMensajeNoHayPlan();
+        }
 
         MostrandoCartas = false;
+        SeHaSeleccionadoPlan = true;
         StateHasChanged();
+    }
+
+    private void MostrarMensajeNoHayPlan()
+    {
+        NoSeHaEncontradoPlan = true;
     }
 
     private void ActualizarFiltro(string tipo, object valor)
