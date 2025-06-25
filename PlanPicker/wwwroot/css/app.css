@@ -119,7 +119,7 @@ h1 {
     font-size: 18px;
     font-weight: bold;
     border: none;
-    width: 350px;
+    width: 300px;
     border-radius: 25px;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
