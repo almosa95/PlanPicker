@@ -167,13 +167,14 @@
         StateHasChanged();
     }
 
-    private void SeleccionarCarta(int index)
+    private async Task SeleccionarCarta(int index)
     {
         CartaSeleccionada = index;
         var random = new Random();
         if (PlanesFiltrados.Count > 0)
         {
             PlanSeleccionado = PlanesFiltrados[random.Next(PlanesFiltrados.Count)];
+            NavigationManager.NavigateTo($"/plan/{PlanSeleccionado.DESCRIPCION}/{Idioma}");
         }
         else
         {
@@ -205,10 +206,10 @@
         if (filtrosActivos.Any())
         {
             PlanesFiltrados = Planes
-            .Where(plan =>
-            filtrosActivos.All(filtro =>
-                plan.TIPO_PLAN.Select(t => t.ToString()).Contains(filtro)))
-            .ToList();
+                                .Where(plan =>
+                                filtrosActivos.All(filtro =>
+                                    plan.TIPO_PLAN.Select(t => t.ToString()).Contains(filtro)))
+                                .ToList();
         }
         else
         {

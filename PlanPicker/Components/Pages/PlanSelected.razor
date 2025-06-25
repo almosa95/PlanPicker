@@ -1,0 +1,25 @@
+﻿@page "/plan/{PlanSeleccionado}/{Idioma}"
+@using PlanPicker.Modelos
+
+<div class="container" style="height: 97vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    @if (!string.IsNullOrEmpty(PlanSeleccionado))
+    {
+        <div class="resultado">
+            <h2>@(Idioma == "es" ? "¡Tu Plan es...! " : "Your plan is...! ")🎉</h2>
+            <p>@PlanSeleccionado</p>
+        </div>
+
+        <button class="btn-descubrir" @onclick="VolverASeleccionarPlanes">@(Idioma == "es" ? "ENCONTRAR OTRO PLAN" : "FIND ANOTHER PLAN")</button>
+    }
+</div>
+
+@code {
+    [Inject] NavigationManager NavigationManager { get; set; }
+    [Parameter] public string PlanSeleccionado { get; set; }
+    [Parameter] public string Idioma { get; set; }
+
+    void VolverASeleccionarPlanes()
+    {
+        NavigationManager.NavigateTo($"/home/{Idioma}");
+    }
+}
