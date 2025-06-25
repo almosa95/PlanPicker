@@ -6,12 +6,16 @@
 @* <div style="background-image: url('img/fondo.jpg')"> *@
 <div>
     <div class="container" style="height: 97vh; display: flex; flex-direction: column; justify-content: center;">
-        <h3 style="font-size: 25px;">@(Idioma == "es" ? "Selecciona el tipo o los tipos de plan:" : "Select one or more plan types:")</h3>
+        <h3 style="font-size: 25px;">@(Idioma == "es" ? "Filtra por tipos de plan" : "Filter by plan types:")</h3>
 
-        @if (_traducciones != null)
+        <p class="titulo-planes">
+            <span class="material-icons">groups</span>
+            @(Idioma == "es" ? "Segun la compañia:" : "By company:")
+        </p>
+        @if (_planesSegunCompanyia != null)
         {
             <div class="checkbox-container">
-                @foreach (var tipo in _traducciones)
+                @foreach (var tipo in _planesSegunCompanyia)
                 {
                     <label class="checkbox-label @(_tipoPlanSeleccionados.ContainsKey(tipo.Key) ? "active" : "")" @onclick="(e) => ActualizarFiltro(tipo.Key.ToString(), tipo.Key.ToString())">
                         @tipo.Value[Idioma]
@@ -20,13 +24,41 @@
             </div>
         }
 
-        @if (!SeHaSeleccionadoPlan)
+        <p class="titulo-planes">
+            <span class="material-icons">public</span>
+            @(Idioma == "es" ? "Segun el entorno:" : "By environment:")
+        </p>
+        @if (_planesSegunEntorno != null)
+        {
+            <div class="checkbox-container">
+                @foreach (var tipo in _planesSegunEntorno)
+                {
+                    <label class="checkbox-label @(_tipoPlanSeleccionados.ContainsKey(tipo.Key) ? "active" : "")" @onclick="(e) => ActualizarFiltro(tipo.Key.ToString(), tipo.Key.ToString())">
+                        @tipo.Value[Idioma]
+                    </label>
+                }
+            </div>
+        }
+
+        <p class="titulo-planes">
+            <span class="material-icons">sports</span>
+            @(Idioma == "es" ? "Segun la actividad:" : "By activity:")
+        </p>
+        @if (_planesGenerales != null)
+        {
+            <div class="checkbox-container">
+                @foreach (var tipo in _planesGenerales)
+                {
+                    <label class="checkbox-label @(_tipoPlanSeleccionados.ContainsKey(tipo.Key) ? "active" : "")" @onclick="(e) => ActualizarFiltro(tipo.Key.ToString(), tipo.Key.ToString())">
+                        @tipo.Value[Idioma]
+                    </label>
+                }
+            </div>
+        }
+
+        @if (!SeHaSeleccionadoPlan && !MostrandoCartas)
         {
             <button class="btn-descubrir" @onclick="IniciarAnimacion">@(Idioma == "es" ? "DESCUBRIR UN PLAN" : "DISCOVER A PLAN")</button>
-        }
-        else
-        {
-            <button class="btn-descubrir" @onclick="IniciarAnimacion">@(Idioma == "es" ? "DESCUBRIR OTRO PLAN" : "DISCOVER NEW PLAN")</button>
         }
 
         @if (MostrandoCartas)
@@ -53,6 +85,11 @@
         {
             <p>@(Idioma == "es" ? "No se ha encontrado un plan que cumpla las condiciones..! " : "There's no plan with this filters..! ")</p>
         }
+
+        @if(SeHaSeleccionadoPlan)
+        {
+            <button class="btn-descubrir" @onclick="IniciarAnimacion">@(Idioma == "es" ? "DESCUBRIR OTRO PLAN" : "DISCOVER NEW PLAN")</button>
+        }
     </div>
 
     @* <button style="border: none; background: inherit;  position: absolute; bottom: 10px; right: 0px;" @onclick="IrAPolitica">
@@ -65,7 +102,9 @@
     [Inject] protected TranslationService TranslationsService { get; set; }
     [Parameter] public string Idioma { get; set; } = "";
 
-    private Dictionary<string, Dictionary<string, string>>? _traducciones;
+    private Dictionary<string, Dictionary<string, string>>? _planesSegunCompanyia;
+    private Dictionary<string, Dictionary<string, string>>? _planesSegunEntorno;
+    private Dictionary<string, Dictionary<string, string>>? _planesGenerales;
     private Dictionary<string, string> _tipoPlanSeleccionados = new();
 
     private List<Plan> Planes = new();
@@ -82,9 +121,9 @@
     protected override async Task OnInitializedAsync()
     {
         Planes = FuncionesGlobales.GetPlans(Idioma);
-        _traducciones = await TranslationsService.LoadJsonAsync();
+        var traducciones = await TranslationsService.LoadJsonAsync();
 
-        var filteredTranslations = _traducciones
+        var filteredTranslations = traducciones
             .Where(entry => entry.Value.ContainsKey(Idioma))
             .ToDictionary(
                 entry => entry.Key,
@@ -93,7 +132,26 @@
                     .ToDictionary(lang => lang.Key, lang => lang.Value)
             );
 
-        _traducciones = new(filteredTranslations);
+
+        _planesSegunCompanyia = filteredTranslations
+            .Where(p => p.Key == PlanTypeEnum.Individual.ToString() || p.Key == PlanTypeEnum.Pareja.ToString() || p.Key == PlanTypeEnum.Familiar.ToString() || p.Key == PlanTypeEnum.Social.ToString())
+            .ToDictionary(p => p.Key, p => p.Value);
+
+        _planesSegunEntorno = filteredTranslations
+        .Where(p => p.Key == PlanTypeEnum.Interior.ToString() || p.Key == PlanTypeEnum.Exterior.ToString() || p.Key == PlanTypeEnum.Cercano.ToString() || p.Key == PlanTypeEnum.Lejano.ToString())
+        .ToDictionary(p => p.Key, p => p.Value);
+
+        _planesGenerales = filteredTranslations
+            .Where(p => p.Key == PlanTypeEnum.Aventura.ToString()
+            || p.Key == PlanTypeEnum.Cultura.ToString()
+            || p.Key == PlanTypeEnum.Relajacion.ToString()
+            || p.Key == PlanTypeEnum.Deportes.ToString()
+            || p.Key == PlanTypeEnum.Aprendizaje.ToString()
+            || p.Key == PlanTypeEnum.Misterio.ToString()
+            || p.Key == PlanTypeEnum.Fiesta.ToString()
+            || p.Key == PlanTypeEnum.Tecnologia.ToString()
+            || p.Key == PlanTypeEnum.Comida.ToString())
+        .ToDictionary(p => p.Key, p => p.Value);
 
         PlanesFiltrados = new(Planes);
     }

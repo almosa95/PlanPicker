@@ -5,20 +5,21 @@
         public enum PlanTypeEnum
         {
             Pareja,
-            Solitario,
+            Individual,
             Familiar,
-            Aventura,
-            Cultura,
-            Relajacion,
-            Comida,
+            Social,
+            Fiesta,
+
             Exterior,
             Interior,
             Cercano,
             Lejano,
-            Rapido,
+
+            Aventura,
+            Cultura,
+            Relajacion,
+            Comida,
             Deportes,
-            Fiesta,
-            Social,
             Aprendizaje,
             Misterio,
             Tecnologia

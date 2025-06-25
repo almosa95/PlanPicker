@@ -111,6 +111,16 @@ h1 {
     animation: fadeIn 1s ease-in-out;
 }
 
+.titulo-planes {
+    display: flex;
+    gap: 10px;
+    font-size: 1.2rem;
+    align-items: center;
+    margin-left: 40px;
+    font-weight: 500;
+    margin-top: 3px;
+}
+
 .btn-descubrir {
     background: #ff4081;
     margin-top: 10px;
@@ -135,14 +145,14 @@ h1 {
     display: flex;
     gap: 10px;
     justify-content: center;
-    margin-top: 20px;
+    margin-top: 12px;
     position: relative;
     animation: barajar 1s ease-in-out;
 }
 
 .carta {
     flex: 1;
-    height: 85px;
+    height: 60px;
     background: #ffffff;
     border-radius: 10px;
     display: flex;
@@ -165,7 +175,7 @@ h1 {
     }
 
 .resultado {
-    margin-top: 18px;
+    margin-top: 10px;
     text-align: center;
     font-size: 17px;
     background: #4caf50;
@@ -220,17 +230,16 @@ p {
     display: flex;
     gap: 10px;
     max-width: 350px;
-    margin: 10px 40px;
+    margin: 7px 40px;
     flex-wrap: wrap;
-    align-self: center;
 }
 
 .checkbox-label {
-    flex: 1 1 calc(33.333% - 10px); /* 3 por fila menos el gap */
+    flex: 1 1 48%;
     display: flex;
     align-items: center;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
     place-content: center;
     cursor: pointer;
     background-color: #f8f8f8;
