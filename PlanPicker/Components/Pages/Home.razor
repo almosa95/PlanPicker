@@ -200,7 +200,6 @@
 
         var filtrosActivos = _tipoPlanSeleccionados.Select(kvp => kvp.Key).ToList();
 
-        //TODO: SI NO ENCUENTRA UN PLAN, Y LUEGO QUITO EL FILTRO QUE HACE QUE NO LO ENCUENTRE, NO FUNCIONA, NO QUITA ESE FILTRO PARECE, LO SIGUE BUSCANDO.
         if (filtrosActivos.Any())
         {
             PlanesFiltrados = Planes
