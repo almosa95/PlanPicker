@@ -9,7 +9,6 @@
         <h3 style="font-size: 25px;">@(Idioma == "es" ? "Filtra por tipos de plan" : "Filter by plan types:")</h3>
 
         <p class="titulo-planes">
-            <span class="material-icons">groups</span>
             @(Idioma == "es" ? "Segun la compañia:" : "By company:")
         </p>
         @if (_planesSegunCompanyia != null)
@@ -25,7 +24,6 @@
         }
 
         <p class="titulo-planes">
-            <span class="material-icons">public</span>
             @(Idioma == "es" ? "Segun el entorno:" : "By environment:")
         </p>
         @if (_planesSegunEntorno != null)
@@ -41,7 +39,6 @@
         }
 
         <p class="titulo-planes">
-            <span class="material-icons">sports</span>
             @(Idioma == "es" ? "Segun la actividad:" : "By activity:")
         </p>
         @if (_planesGenerales != null)
@@ -171,6 +168,7 @@
     {
         CartaSeleccionada = index;
         var random = new Random();
+
         if (PlanesFiltrados.Count > 0)
         {
             PlanSeleccionado = PlanesFiltrados[random.Next(PlanesFiltrados.Count)];
@@ -196,13 +194,13 @@
         if (_tipoPlanSeleccionados.ContainsKey(tipo))
         {
             _tipoPlanSeleccionados.Remove(tipo);
-            return;
         }
 
         _tipoPlanSeleccionados[tipo] = (string)valor;
 
         var filtrosActivos = _tipoPlanSeleccionados.Select(kvp => kvp.Key).ToList();
 
+        //TODO: SI NO ENCUENTRA UN PLAN, Y LUEGO QUITO EL FILTRO QUE HACE QUE NO LO ENCUENTRE, NO FUNCIONA, NO QUITA ESE FILTRO PARECE, LO SIGUE BUSCANDO.
         if (filtrosActivos.Any())
         {
             PlanesFiltrados = Planes
